@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: "Creating group"
+      group:
+        name: "weblogic"
+        state: present
+    - name: "Creating user and map to weblogic group"
+      user:
+        name: "weblogic"
+        group: weblogic
+        state: present

@@ -1,0 +1,13 @@
+# Home vars
+oracle_home: "/app/oracle/"
+domain_home: "/app/oracle/user_projects/domains"
+java_home: "/app/java"
+
+# Credentials
+domain_name: "base_domain"
+domain_username: "weblogic"
+domain_password: "weblogic"
+
+# Admin port
+admin_port: 7001
+admin_port_ssl: 7003
