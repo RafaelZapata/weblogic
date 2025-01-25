@@ -1,2 +1,9 @@
-admin_server
-managed_server
+[admin]
+admin_server ansible_user=vagrant ansible_ssh_private_key_file=/home/vagrant/.ssh/id_rsa
+
+[managed]
+managed_server ansible_user=vagrant ansible_ssh_private_key_file=/home/vagrant/.ssh/id_rsa
+
+[weblogic:children]
+admin
+managed

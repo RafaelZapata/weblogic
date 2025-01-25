@@ -30,4 +30,4 @@ RUN printf "Host admin_server\n  HostName 192.168.56.10\n  User vagrant\n  Ident
 
 WORKDIR /ansible
 
-CMD ["bash"]
+CMD ["/bin/bash", "-c", "echo '192.168.56.10 admin_server' >> /etc/hosts && echo '192.168.56.11 managed_server' >> /etc/hosts && bash"]

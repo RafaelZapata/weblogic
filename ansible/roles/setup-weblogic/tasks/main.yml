@@ -1,13 +1,11 @@
 ---
-- hosts: all
-  become: yes
-  tasks:
-    - name: "Creating group"
-      group:
-        name: "weblogic"
-        state: present
-    - name: "Creating user and map to weblogic group"
-      user:
-        name: "weblogic"
-        group: weblogic
-        state: present
+- name: "Install WebLogic and Java on all hosts"
+  include: install-weblogic.yml
+
+- name: "Create WebLogic Domain on Admin Server"
+  when: "'admin' in group_names"
+  include: create-domain.yml
+
+- name: "Create Weblogic Domain on Managed Server"
+  when: "'managed' in group_names"
+  include: create-managed.yml

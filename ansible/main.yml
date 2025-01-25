@@ -1,0 +1,5 @@
+---
+- hosts: weblogic
+  become: yes
+  roles:
+    - setup-weblogic

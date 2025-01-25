@@ -1,0 +1,36 @@
+readTemplate('{{ oracle_home }}/wlserver/common/templates/wls/wls.jar')
+
+set('Name', '{{ weblogic_domain }}')
+set('AdminServerName', '{{ admin_server_name }}')
+
+cd('/Servers/AdminServer')
+set('ListenAddress', '{{ admin_server_address }}')
+set('ListenPort', {{ admin_server_port }})
+
+cd('/')
+cd('Security/{{ weblogic_domain }}/User/weblogic')
+set('Name', '{{ weblogic_user }}')
+cmo.setPassword('{{ weblogic_pass }}')
+
+cd('/')
+create('{{ machine_name }}', 'Machine')
+cd('/Machines/{{ machine_name }}')
+create('{{ machine_name }}', 'NodeManager')
+cd('NodeManager/{{ machine_name }}')
+set('ListenAddress', '{{ managed_machine_address }}')
+set('ListenPort', {{ nodemanager_port }})
+set('NMType', 'Plain')
+
+cd('/')
+create('{{ managed_server_name }}', 'Server')
+cd('/Servers/{{ managed_server_name }}')
+set('ListenAddress', '{{ managed_machine_address }}')
+set('ListenPort', {{ managed_server_port }})
+set('Machine', '{{ machine_name }}')
+
+writeDomain('{{ domain_home }}')
+closeTemplate()
+
+readDomain('{{ domain_home }}')
+updateDomain()
+closeDomain()
