@@ -1,0 +1,11 @@
+---
+- name: "Install WebLogic and Java on all hosts"
+  include: install-weblogic.yml
+
+- name: "Create WebLogic Domain on Admin Server"
+  when: "'admin' in group_names"
+  include: create-domain.yml
+
+- name: "Create Weblogic Domain on Managed Server"
+  when: "'managed' in group_names"
+  include: create-managed.yml
