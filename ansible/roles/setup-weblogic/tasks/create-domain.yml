@@ -7,7 +7,7 @@
 
 - name: "Create domain"
   become_user: "{{ machine_user }}"
-  shell: "{{ oracle_home }}/oracle_common/common/bin/wlst.sh {{ app_home }}/create_domain.py"
+  command: "{{ oracle_home }}/oracle_common/common/bin/wlst.sh {{ app_home }}/create_domain.py"
 
 - name: "Start weblogic admin"
   become_user: "{{ machine_user }}"
@@ -15,15 +15,15 @@
 
 - name: "Check admin status"
   wait_for:
-    host: "{{ ansible_facts.eth1.ipv4.address }}"
+    host: "{{ admin_server_address }}"
     port: "{{ admin_server_port }}"
     state: started
     delay: 10
-    timeout: 120
+    timeout: 180
 
 - name: "Pack domain"
   become_user: "{{ machine_user }}"
-  shell: "{{ oracle_home }}/oracle_common/common/bin/pack.sh -domain={{ domain_home }} -template={{ domain_home }}/{{ weblogic_domain }}.jar -template_name={{ weblogic_domain }} -managed=true"
+  command: "{{ oracle_home }}/oracle_common/common/bin/pack.sh -domain={{ domain_home }} -template={{ domain_home }}/{{ weblogic_domain }}.jar -template_name={{ weblogic_domain }} -managed=true"
   args:
     creates: "{{ domain_home }}/{{ weblogic_domain }}.jar"
 

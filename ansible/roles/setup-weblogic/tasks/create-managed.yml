@@ -8,7 +8,7 @@
 
 - name: "Unpack domain"
   become_user: "{{ machine_user }}"
-  shell: "{{ oracle_home }}/oracle_common/common/bin/unpack.sh -domain={{ domain_home }} -template=/tmp/{{ weblogic_domain }}.jar"
+  command: "{{ oracle_home }}/oracle_common/common/bin/unpack.sh -domain={{ domain_home }} -template=/tmp/{{ weblogic_domain }}.jar"
 
 - name: "Set SecureListener to false in nodemanager.properties"
   lineinfile:

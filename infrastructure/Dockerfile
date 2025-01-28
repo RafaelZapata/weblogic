@@ -26,8 +26,8 @@ COPY id_rsa /root/.ssh/id_rsa
 RUN chmod 700 /root/.ssh
 RUN chmod 400 /root/.ssh/*
 
-RUN printf "Host admin_server\n  HostName 192.168.56.10\n  User vagrant\n  IdentityFile /root/.ssh/id_rsa\n  StrictHostKeyChecking no\n\nHost managed_server\n  HostName 192.168.56.11\n  User vagrant\n  IdentityFile /root/.ssh/id_rsa\n  StrictHostKeyChecking no\n" >> /root/.ssh/config
+RUN printf "Host admin_server\n  HostName 192.168.56.10\n  User vagrant\n  IdentityFile /root/.ssh/id_rsa\n  StrictHostKeyChecking no\n\nHost managed_server\n  HostName 192.168.56.11\n  User vagrant\n  IdentityFile /root/.ssh/id_rsa\n  StrictHostKeyChecking no\n\nHost tomcat_server\n  HostName 192.168.56.12\n  User vagrant\n  IdentityFile /root/.ssh/id_rsa\n  StrictHostKeyChecking no\n" >> /root/.ssh/config
 
 WORKDIR /ansible
 
-CMD ["/bin/bash", "-c", "echo '192.168.56.10 admin_server' >> /etc/hosts && echo '192.168.56.11 managed_server' >> /etc/hosts && bash"]
+CMD ["/bin/bash", "-c", "echo '192.168.56.10 admin_server' >> /etc/hosts && echo '192.168.56.11 managed_server' >> /etc/hosts && echo '192.168.56.12 tomcat_server' >> /etc/hosts && bash"]

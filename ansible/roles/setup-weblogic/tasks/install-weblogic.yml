@@ -80,4 +80,4 @@
 
 - name: "Install weblogic silent mode"
   become_user: "{{ machine_user }}"
-  shell: "{{ java_home }}/bin/java -Xmx1024m -jar {{ app_home }}/fmw_14.1.1.0.0_wls_lite_generic.jar -silent -responseFile {{ app_home }}/wls.rsp -invPtrLoc {{ inventory_home }}/"
+  command: "{{ java_home }}/bin/java -Xmx1024m -jar {{ app_home }}/fmw_14.1.1.0.0_wls_lite_generic.jar -silent -responseFile {{ app_home }}/wls.rsp -invPtrLoc {{ inventory_home }}/"

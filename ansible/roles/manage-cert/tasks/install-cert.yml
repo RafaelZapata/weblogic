@@ -1,0 +1,51 @@
+---
+- name: "Backup current identity keystore"
+  become_user: "{{ machine_user }}"
+  copy:
+    src: "{{ identity_keystore_path }}/{{ identity_keystore }}"
+    dest: "{{ identity_keystore_path }}/{{ identity_keystore }}_date"
+    remote_src: true
+
+- name: "Import pfx to jks"
+  become_user: "{{ machine_user }}"
+  command: "{{ java_home }}/bin/keytool -importkeystore -srckeystore {{ app_home }}/cert.pfx -srcstoretype PKCS12 -srcstorepass {{ identity_keystore_pass }} -destkeystore {{ identity_keystore_path }}/{{ identity_keystore }} -deststoretype JKS -deststorepass {{ identity_keystore_pass }} -noprompt"
+
+- name: "List certificates in identity keystore"
+  become_user: "{{ machine_user }}"
+  command: "{{ java_home }}/bin/keytool -v -list -alias {{ alias }} -keystore {{ identity_keystore_path }}/{{ identity_keystore }} -storepass {{ identity_keystore_pass }}"
+  register: keystore_certificate
+
+- name: "Show certificate in identity keystore"
+  debug:
+    msg: "{{ keystore_certificate.stdout }}"
+
+- name: "Backup current java keystore"
+  become_user: "{{ machine_user }}"
+  copy:
+    src: "{{ java_home }}/jre/lib/security/cacerts"
+    dest: "{{ java_home }}/jre/lib/security/cacerts_date"
+    remote_src: true
+
+- name: "Check alias exists in java keystore"
+  become_user: "{{ machine_user }}"
+  command: "{{ java_home }}/bin/keytool -v -list -alias {{ alias }} -keystore {{ java_home }}/jre/lib/security/cacerts -storepass changeit"
+  register: cacerts_keystore
+  failed_when: false
+
+- name: "Delete alias if exists"
+  become_user: "{{ machine_user }}"
+  command: "{{ java_home }}/bin/keytool -delete -alias {{ alias }} -keystore {{ java_home }}/jre/lib/security/cacerts -storepass changeit"
+  when: cacerts_keystore.rc == 0
+
+- name: "Import cert to java keystore"
+  become_user: "{{ machine_user }}"
+  command: "{{ java_home }}/bin/keytool -import -alias {{ alias }} -file {{ app_home }}/cert.cer -keystore {{ java_home }}/jre/lib/security/cacerts -storepass changeit -noprompt"
+
+- name: "List certificates in java keystore"
+  become_user: "{{ machine_user }}"
+  command: "{{ java_home }}/bin/keytool -v -list -alias {{ alias }} -keystore {{ java_home }}/jre/lib/security/cacerts -storepass changeit"
+  register: cacerts_keystore
+
+- name: "Show certificate in java keystore"
+  debug:
+    msg: "{{ cacerts_keystore.stdout }}"

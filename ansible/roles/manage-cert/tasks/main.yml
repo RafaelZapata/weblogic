@@ -1,0 +1,14 @@
+---
+- name: "Create certificate"
+  include: create-certs.yml
+
+- name: "Install certificate in keystore"
+  include: install-cert.yml
+
+- name: "Restart admin to apply cert"
+  include: restart-admin.yml
+  when: "'admin' in group_names"
+
+- name: "Restart managed to apply cert"
+  include: restart-managed.yml
+  when: "'managed' in group_names"

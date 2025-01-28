@@ -1,0 +1,40 @@
+---
+- name: "Generate private key"
+  openssl_privatekey:
+    path: "{{ app_home }}/privatekey.key"
+    type: RSA
+    size: 2048
+    mode: 0755
+    force: yes
+
+- name: "Create CSR for self-signed certificate"
+  openssl_csr:
+    path: "{{ app_home }}/csr.csr"
+    privatekey_path: "{{ app_home }}/privatekey.key"
+    common_name: "{{ cn_cert }}"
+    organization_name: "{{ organization }}"
+    country_name: "{{ country }}"
+    email_address: "{{ email }}"
+    subject_alt_name: "{{ san }}"
+    mode: 0755
+    force: yes
+
+- name: "Create certificate from CSR"
+  community.crypto.x509_certificate:
+    path: "{{ app_home }}/cert.cer"
+    privatekey_path: "{{ app_home }}/privatekey.key"
+    csr_path: "{{ app_home }}/csr.csr"
+    selfsigned_not_after: "{{ not_after }}"
+    provider: selfsigned
+    force: yes
+
+- name: "Create pfx file"
+  openssl_pkcs12:
+    path: "{{ app_home }}/cert.pfx"
+    friendly_name: "{{ alias }}"
+    privatekey_path: "{{ app_home }}/privatekey.key"
+    certificate_path: "{{ app_home }}/cert.cer"
+    passphrase: "{{ identity_keystore_pass }}"
+    state: present
+    mode: 0755
+    force: yes

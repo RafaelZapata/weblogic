@@ -1,0 +1,15 @@
+- name: "Stop managed"
+  shell: "ps -ef | grep 'Dweblogic.Name=machine1' | grep -v grep | awk '{print $2}' | xargs -r kill -9"
+  register: stop_managed
+  changed_when: stop_managed.stdout != ""
+
+- name: "Start managed"
+  shell: "nohup {{ domain_home }}/bin/startManagedWebLogic.sh {{ managed_server_name }} http://{{ admin_server_address }}:{{ admin_server_port }} &"
+
+- name: "Check managed status"
+  wait_for:
+    host: "{{ managed_machine_address }}"
+    port: "{{ managed_server_port }}"
+    state: started
+    delay: 10
+    timeout: 120
