@@ -9,22 +9,22 @@ country: "FR"
 email: "example@example.com"
 alias: "1"
 
-java_home: "/app/java"
-domain_home: "/app/user_projects/domains/base_domain"
+java_home: "{{ app_home }}/java"
+domain_home: "{{ app_home }}/user_projects/domains/base_domain"
 admin_server_address: "192.168.56.10"
 admin_server_port: 7001
 managed_machine_address: "192.168.56.11"
 managed_server_name: "machine1"
 managed_server_port: 8001
 
-identity_keystore_path: "/app/user_projects/domains/base_domain/security/"
+identity_keystore_path: "{{ app_home }}/user_projects/domains/base_domain/security/"
 identity_keystore: "DemoIdentity.jks"
 identity_keystore_pass: "DemoIdentityKeyStorePassPhrase"
 
-trust_keystore_path: "/app/oracle/wlserver/server/lib/"
+trust_keystore_path: "{{ app_home }}/oracle/wlserver/server/lib/"
 trust_keystore: "DemoTrust.jks"
 trust_keystore_pass: "changeit"
 
-java_keystore_path: "/app/jdk1.8.0_421/jre/lib/security/"
+java_keystore_path: "{{ java_home }}/jre/lib/security/"
 java_keystore: "cacerts"
 java_keystore_pass: "changeit"

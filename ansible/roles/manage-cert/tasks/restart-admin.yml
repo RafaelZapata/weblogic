@@ -1,15 +1,15 @@
 ---
-- name: "Stop admin"
+- name: Stop admin
   shell: "ps -ef | grep 'Dweblogic.Name=AdminServer' | grep -v grep | awk '{print $2}' | xargs -r kill -9"
   register: stop_admin
   changed_when: stop_admin.stdout != ""
 
-- name: "Start admin"
+- name: Start admin
   become_user: "{{ machine_user }}"
   shell: "nohup {{ domain_home }}/startWebLogic.sh &"
   when: ""
 
-- name: "Check admin status"
+- name: Check admin status
   wait_for:
     host: "{{ admin_server_address }}"
     port: "{{ admin_server_port }}"

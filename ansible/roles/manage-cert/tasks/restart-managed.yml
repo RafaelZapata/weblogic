@@ -4,6 +4,7 @@
   changed_when: stop_managed.stdout != ""
 
 - name: "Start managed"
+  become_user: "{{ machine_user }}"
   shell: "nohup {{ domain_home }}/bin/startManagedWebLogic.sh {{ managed_server_name }} http://{{ admin_server_address }}:{{ admin_server_port }} &"
 
 - name: "Check managed status"

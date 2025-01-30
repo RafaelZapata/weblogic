@@ -1,0 +1,84 @@
+---
+- name: "Create tomcat group"
+  group:
+    name: "{{ machine_user }}"
+
+- name: "Create tomcat user"
+  user:
+    name: "{{ machine_user }}"
+    group: "{{ machine_user }}"
+
+- name: "Create app_home"
+  file:
+    path: "{{ app_home }}"
+    owner: "{{ machine_user }}"
+    group: "{{ machine_user }}"
+    state: directory
+
+- name: "Install java"
+  become_user: "{{ machine_user }}"
+  unarchive:
+    src: "{{ item }}"
+    dest: "{{ app_home }}"
+  with_items:
+    - "jdk-8u421-linux-x64.tar.gz"
+
+- name: "Link java_home"
+  become_user: "{{ machine_user }}"
+  file:
+    src: "/app/jdk1.8.0_421"
+    dest: "{{ java_home }}"
+    owner: "{{ machine_user }}"
+    group: "{{ machine_user }}"
+    state: link
+    force: yes
+
+- name: "Download tomcat"
+  become_user: "{{ machine_user }}"
+  get_url:
+    url: "https://archive.apache.org/dist/tomcat/{{ tomcat_dist }}/{{ tomcat_version }}/bin/{{ tomcat_download_file }}.tar.gz"
+    dest: "{{ app_home }}"
+    mode: 0755
+
+- name: "Unpack tomcat file"
+  become_user: "{{ machine_user }}"
+  unarchive:
+    src: "{{ app_home }}/{{ tomcat_download_file }}.tar.gz"
+    dest: "{{ app_home }}"
+    remote_src: yes
+
+- name: "Link tomcat with tomcat download file"
+  become_user: "{{ machine_user }}"
+  file:
+    src: "{{ app_home }}/{{ tomcat_download_file }}"
+    dest: "{{ tomcat_home }}"
+    state: link
+    mode: 0755
+
+- name: "Copy setenv to tomcat_home/bin"
+  template:
+    src: "setenv.sh.j2"
+    dest: "{{ tomcat_home }}/bin/setenv.sh"
+    mode: 0755
+
+- name: Ensure permissions for Tomcat directories
+  file:
+    path: "{{ tomcat_home }}"
+    state: directory
+    owner: "{{ machine_user }}"
+    group: "{{ machine_user }}"
+    recurse: yes
+
+- name: Start Tomcat with explicit environment
+  shell: "setsid {{ tomcat_home }}/bin/startup.sh & disown"
+  become_user: "{{ machine_user }}"
+  args:
+    chdir: "{{ tomcat_home }}"
+
+- name: "Check tomcat status"
+  wait_for:
+    host: "{{ tomcat_address }}"
+    port: "{{ tomcat_port }}"
+    state: started
+    delay: 10
+    timeout: 120

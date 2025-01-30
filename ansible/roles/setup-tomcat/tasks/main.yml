@@ -1,0 +1,8 @@
+---
+- name: "Setup tomcat"
+  include: "setup-tomcat.yml"
+  when: "'tomcat' in group_names"
+
+- name: "Apply patch"
+  include: "apply-patch.yml"
+  when: "'tomcat' in group_names"

@@ -1,0 +1,6 @@
+JAVA_HOME={{ java_home }}
+CATALINA_HOME={{ tomcat_home }}
+CATALINA_BASE={{ tomcat_home }}
+PATH=$JAVA_HOME/bin:$PATH
+JAVA_OPTS="-Xms512m -Xmx1024m"
+CATALINA_OPTS="-server -XX:+UseParallelGC"

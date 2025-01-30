@@ -1,0 +1,12 @@
+---
+machine_user: "tomcat"
+app_home: "/app"
+java_home: "{{ app_home }}/java"
+tomcat_dist: "tomcat-9"
+tomcat_version: "v9.0.70"
+tomcat_target_version: "v9.0.98"
+tomcat_download_file: "apache-tomcat-9.0.70"
+tomcat_target_download_file: "apache-tomcat-9.0.98"
+tomcat_home: "{{ app_home }}/tomcat"
+tomcat_address: "192.168.56.12"
+tomcat_port: 8080

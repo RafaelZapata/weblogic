@@ -1,6 +1,11 @@
 ---
-- hosts: weblogic
+# - hosts: weblogic
+#   become: yes
+#   roles:
+#     - setup-weblogic
+#     - manage-cert
+
+- hosts: tomcat
   become: yes
   roles:
-    - setup-weblogic
-    - manage-cert
+    - setup-tomcat

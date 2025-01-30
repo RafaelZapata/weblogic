@@ -1,5 +1,5 @@
 ---
-- name: "Generate private key"
+- name: Generate private key
   openssl_privatekey:
     path: "{{ app_home }}/privatekey.key"
     type: RSA
@@ -7,7 +7,7 @@
     mode: 0755
     force: yes
 
-- name: "Create CSR for self-signed certificate"
+- name: Create CSR for self-signed certificate
   openssl_csr:
     path: "{{ app_home }}/csr.csr"
     privatekey_path: "{{ app_home }}/privatekey.key"
@@ -19,7 +19,7 @@
     mode: 0755
     force: yes
 
-- name: "Create certificate from CSR"
+- name: Create certificate from CSR
   community.crypto.x509_certificate:
     path: "{{ app_home }}/cert.cer"
     privatekey_path: "{{ app_home }}/privatekey.key"
@@ -28,7 +28,7 @@
     provider: selfsigned
     force: yes
 
-- name: "Create pfx file"
+- name: Create pfx file
   openssl_pkcs12:
     path: "{{ app_home }}/cert.pfx"
     friendly_name: "{{ alias }}"

@@ -1,0 +1,88 @@
+---
+- name: Check tomcat current version
+  command: "{{ tomcat_home }}/bin/version.sh"
+  register: version
+
+- name: Tomcat current version
+  debug:
+    msg: "Actual version '{{ version.stdout_lines[6] }}'"
+
+- name: Download tomcat target version
+  become_user: "{{ machine_user }}"
+  get_url:
+    url: "https://archive.apache.org/dist/tomcat/{{ tomcat_dist }}/{{ tomcat_target_version }}/bin/{{ tomcat_target_download_file }}.tar.gz"
+    dest: "{{ app_home }}"
+    mode: 0755
+
+- name: Unpack new tomcat
+  become_user: "{{ machine_user }}"
+  unarchive:
+    src: "{{ app_home }}/{{ tomcat_target_download_file }}.tar.gz"
+    dest: "{{ app_home }}"
+    remote_src: yes
+
+- name: Link new tomcat
+  become_user: "{{ machine_user }}"
+  file:
+    src: "{{ app_home }}/{{ tomcat_target_download_file }}"
+    dest: "{{ tomcat_home }}"
+    state: link
+    mode: 0755
+    force: yes
+
+- name: Copy conf and webapps from previous version to newly one
+  become_user: "{{ machine_user }}"
+  copy:
+    src: "{{ app_home }}/{{ tomcat_download_file }}/{{ item }}"
+    dest: "{{ tomcat_home }}/"
+    owner: "{{ machine_user }}"
+    group: "{{ machine_user }}"
+    remote_src: yes
+    backup: true
+  with_items:
+    - "conf"
+    - "webapps"
+
+- name: Copy essentials files from old to new tomcat
+  become_user: "{{ machine_user }}"
+  copy:
+    src: "{{ app_home }}/{{ tomcat_download_file }}/bin/{{ item }}"
+    dest: "{{ tomcat_home }}/bin/"
+    owner: "{{ machine_user }}"
+    group: "{{ machine_user }}"
+    remote_src: yes
+    backup: true
+  with_items:
+    - "setenv.sh"
+    - "startup.sh"
+    - "shutdown.sh"
+    - "catalina.sh"
+    - "setclasspath.sh"
+
+- name: Check tomcat newest version
+  command: "{{ tomcat_home }}/bin/version.sh"
+  register: version
+
+- name: Tomcat newest version
+  debug:
+    msg: "Actual version '{{ version.stdout_lines[6] }}'"
+
+- name: Stop Tomcat (Kill process)
+  become_user: "{{ machine_user }}"
+  shell: "ps -ef | grep '[j]ava.*tomcat' | awk '{print $2}' | xargs -r kill -9"
+
+- name: Start Tomcat
+  become_user: "{{ machine_user }}"
+  shell: "setsid {{ tomcat_home }}/bin/startup.sh & disown"
+  args:
+    chdir: "{{ tomcat_home }}"
+
+- name: "Check tomcat status after patch"
+  wait_for:
+    host: "{{ tomcat_address }}"
+    port: "{{ tomcat_port }}"
+    state: started
+    delay: 10
+    timeout: 120
+
+- name: Backup old tomcat
