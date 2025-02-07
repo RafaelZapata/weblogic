@@ -81,3 +81,11 @@
 - name: "Install weblogic silent mode"
   become_user: "{{ machine_user }}"
   command: "{{ java_home }}/bin/java -Xmx1024m -jar {{ app_home }}/fmw_14.1.1.0.0_wls_lite_generic.jar -silent -responseFile {{ app_home }}/wls.rsp -invPtrLoc {{ inventory_home }}/"
+
+- name: "Remove weblogic installer"
+  become_user: "{{ machine_user }}"
+  command: "rm -rf {{ app_home }}/fmw_14.1.1.0.0_wls_lite_generic.jar"
+
+- name: "Remove response file"
+  become_user: "{{ machine_user }}/"
+  command: "rm -f {{ app_home }}/wls.rsp"

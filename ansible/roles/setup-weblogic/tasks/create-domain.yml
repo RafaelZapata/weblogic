@@ -41,3 +41,8 @@
     dest: "/tmp/"
     mode: pull
   delegate_to: "{{ groups['managed'][0] }}"
+
+- name: "Remove domain template"
+  file:
+    path: "{{ app_home }}/create_domain.py"
+    state: absent
