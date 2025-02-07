@@ -3,11 +3,22 @@
   shell: "ps -ef | grep 'Dweblogic.Name=AdminServer' | grep -v grep | awk '{print $2}' | xargs -r kill -9"
   register: stop_admin
   changed_when: stop_admin.stdout != ""
+  failed_when: false
+  ignore_errors: true
+
+- name: Wait for process to stop
+  wait_for:
+    path: "/proc/{{ item }}/status"
+    state: absent
+  with_items: "{{ stop_admin.stdout_lines }}"
+  ignore_errors: true
+  when: stop_admin.stdout_lines is defined
 
 - name: Start admin
   become_user: "{{ machine_user }}"
   shell: "nohup {{ domain_home }}/startWebLogic.sh &"
-  when: ""
+  async: 45
+  poll: 0
 
 - name: Check admin status
   wait_for:
@@ -16,3 +27,9 @@
     state: started
     delay: 10
     timeout: 120
+  register: server_status
+  failed_when:
+    - server_status.failed is defined
+    - server_status.failed
+  retries: 3
+  delay: 5

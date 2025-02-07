@@ -1,2 +1,10 @@
 ---
 # defaults file for setup-tomcat
+
+backup_retention_days: 7
+tomcat_min_heap_size: "512m"
+tomcat_max_heap_size: "1024m"
+tomcat_check_timeout: 180
+tomcat_startup_wait: 10
+tomcat_validate_certs: true
+tomcat_force_restart: false

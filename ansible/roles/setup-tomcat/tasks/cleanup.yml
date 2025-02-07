@@ -1,0 +1,13 @@
+---
+- name: Cleanup old backup files
+  find:
+    paths: "{{ app_home }}"
+    patterns: "tomcat_*_backup_*.tar.gz"
+    age: "{{ backup_retention_days }}d"
+  register: old_backups
+
+- name: Remove old backup files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ old_backups.files }}"

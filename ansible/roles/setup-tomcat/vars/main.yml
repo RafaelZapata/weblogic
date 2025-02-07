@@ -1,12 +1,44 @@
 ---
+# User settings
 machine_user: "tomcat"
+
+# Directory structure
 app_home: "/app"
 java_home: "{{ app_home }}/java"
-tomcat_dist: "tomcat-9"
-tomcat_version: "v9.0.70"
-tomcat_target_version: "v9.0.98"
-tomcat_download_file: "apache-tomcat-9.0.70"
-tomcat_target_download_file: "apache-tomcat-9.0.98"
 tomcat_home: "{{ app_home }}/tomcat"
+
+# Tomcat version settings
+tomcat_major_version: "9"
+tomcat_version: "9.0.39"
+tomcat_download_file: "apache-tomcat-{{ tomcat_version }}"
+tomcat_target_version: "9.0.98"
+tomcat_target_download_file: "apache-tomcat-{{ tomcat_target_version }}"
+tomcat_dist: "9"
+
+# Network settings
 tomcat_address: "192.168.56.12"
 tomcat_port: 8080
+tomcat_shutdown_port: 8005
+tomcat_ajp_port: 8009
+
+# Memory settings
+tomcat_xms: "512M"
+tomcat_xmx: "1024M"
+
+# Security settings
+tomcat_allow_manager_access_from: ".*" # Restrict as needed
+
+# Backup settings
+backup_retention_days: 7
+max_backups: 5
+
+# Health check settings
+health_check_interval: 60
+max_health_retries: 3
+health_check_timeout: 30
+
+# Additional JVM tuning
+tomcat_initial_heap: "{{ tomcat_xms }}"
+tomcat_max_heap: "{{ tomcat_xmx }}"
+tomcat_max_threads: 200
+tomcat_min_spare_threads: 25

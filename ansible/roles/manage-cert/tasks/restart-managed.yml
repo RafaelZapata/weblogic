@@ -2,10 +2,22 @@
   shell: "ps -ef | grep 'Dweblogic.Name=machine1' | grep -v grep | awk '{print $2}' | xargs -r kill -9"
   register: stop_managed
   changed_when: stop_managed.stdout != ""
+  failed_when: false # Don't fail if process is not running
+  ignore_errors: true
+
+- name: "Wait for process to stop"
+  wait_for:
+    path: "/proc/{{ item }}/status"
+    state: absent
+  with_items: "{{ stop_managed.stdout_lines }}"
+  ignore_errors: true
+  when: stop_managed.stdout_lines is defined
 
 - name: "Start managed"
   become_user: "{{ machine_user }}"
-  shell: "nohup {{ domain_home }}/bin/startManagedWebLogic.sh {{ managed_server_name }} http://{{ admin_server_address }}:{{ admin_server_port }} &"
+  shell: "nohup {{ domain_home }}/bin/startManagedWebLogic.sh {{ managed_server_name }} http://{{ admin_server_address }}:{{ admin_server_port }} >> {{ domain_home }}/logs/managed_start.log 2>&1 &"
+  async: 45
+  poll: 0
 
 - name: "Check managed status"
   wait_for:
@@ -14,3 +26,9 @@
     state: started
     delay: 10
     timeout: 120
+  register: server_status
+  failed_when:
+    - server_status.failed is defined
+    - server_status.failed
+  retries: 3
+  delay: 5

@@ -10,3 +10,9 @@
   become: yes
   roles:
     - { role: manage-cert, tags: ["certificates"] }
+
+- name: Setup Tomcat Environment
+  hosts: tomcat
+  become: yes
+  roles:
+    - setup-tomcat

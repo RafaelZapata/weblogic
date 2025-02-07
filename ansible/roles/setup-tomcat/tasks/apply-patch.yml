@@ -1,4 +1,12 @@
 ---
+- name: Create pre-patch backup
+  archive:
+    path: "{{ tomcat_home }}"
+    dest: "{{ app_home }}/tomcat_pre_patch_{{ ansible_date_time.iso8601 }}.tar.gz"
+    owner: "{{ machine_user }}"
+    group: "{{ machine_user }}"
+  when: not ansible_check_mode
+
 - name: Check tomcat current version
   command: "{{ tomcat_home }}/bin/version.sh"
   register: version
@@ -10,9 +18,15 @@
 - name: Download tomcat target version
   become_user: "{{ machine_user }}"
   get_url:
-    url: "https://archive.apache.org/dist/tomcat/{{ tomcat_dist }}/{{ tomcat_target_version }}/bin/{{ tomcat_target_download_file }}.tar.gz"
-    dest: "{{ app_home }}"
+    url: "https://archive.apache.org/dist/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_target_version }}/bin/apache-tomcat-{{ tomcat_target_version }}.tar.gz"
+    dest: "{{ app_home }}/apache-tomcat-{{ tomcat_target_version }}.tar.gz"
     mode: 0755
+  register: download_result
+  failed_when:
+    - download_result.status_code is defined
+    - download_result.status_code != 200
+  retries: 3
+  delay: 5
 
 - name: Unpack new tomcat
   become_user: "{{ machine_user }}"
@@ -84,3 +98,25 @@
     state: started
     delay: 10
     timeout: 120
+
+- name: Validate Tomcat installation
+  block:
+    - name: Verify Tomcat process
+      shell: "ps -ef | grep '[j]ava.*tomcat'"
+      register: tomcat_process
+      until: tomcat_process.rc == 0
+      retries: 3
+      delay: 5
+
+    - name: Check Tomcat logs for errors
+      shell: "grep -i 'error\\|exception' {{ tomcat_home }}/logs/catalina.out"
+      register: log_check
+      failed_when: log_check.rc == 0
+      changed_when: false
+  rescue:
+    - name: Restore from backup on failure
+      unarchive:
+        src: "{{ app_home }}/tomcat_pre_patch_{{ ansible_date_time.iso8601 }}.tar.gz"
+        dest: "{{ app_home }}"
+        remote_src: yes
+      notify: restart tomcat

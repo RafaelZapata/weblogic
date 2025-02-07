@@ -6,3 +6,8 @@
 - name: "Apply patch"
   include: "apply-patch.yml"
   when: "'tomcat' in group_names"
+
+- name: "Cleanup old backups"
+  include: "cleanup.yml"
+  when: "'tomcat' in group_names"
+  tags: ["cleanup"]

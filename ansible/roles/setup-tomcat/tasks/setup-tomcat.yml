@@ -1,4 +1,11 @@
 ---
+- name: "Pre-flight checks"
+  block:
+    - name: "Check available disk space in GB"
+      shell: "df -h / | awk 'NR==2 {print $4}' | sed 's/G//'" # Remove the G suffix Changed to get raw KB value
+      register: available_space
+      failed_when: (available_space.stdout|float) < 2 # Compare with 2GB
+
 - name: "Create tomcat group"
   group:
     name: "{{ machine_user }}"
@@ -36,9 +43,15 @@
 - name: "Download tomcat"
   become_user: "{{ machine_user }}"
   get_url:
-    url: "https://archive.apache.org/dist/tomcat/{{ tomcat_dist }}/{{ tomcat_version }}/bin/{{ tomcat_download_file }}.tar.gz"
-    dest: "{{ app_home }}"
+    url: "https://archive.apache.org/dist/tomcat/tomcat-{{ tomcat_dist }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+    dest: "{{ app_home }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
     mode: 0755
+  register: download_result
+  failed_when:
+    - download_result.status_code is defined
+    - download_result.status_code != 200
+  retries: 3
+  delay: 5
 
 - name: "Unpack tomcat file"
   become_user: "{{ machine_user }}"
@@ -74,6 +87,14 @@
   become_user: "{{ machine_user }}"
   args:
     chdir: "{{ tomcat_home }}"
+
+- name: Create backup of initial installation
+  archive:
+    path: "{{ tomcat_home }}"
+    dest: "{{ app_home }}/tomcat_initial_backup_{{ ansible_date_time.iso8601 }}.tar.gz"
+    owner: "{{ machine_user }}"
+    group: "{{ machine_user }}"
+  when: not ansible_check_mode
 
 - name: "Check tomcat status"
   wait_for:
