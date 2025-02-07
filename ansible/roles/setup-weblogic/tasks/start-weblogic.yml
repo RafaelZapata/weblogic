@@ -1,0 +1,24 @@
+---
+- name: "Start Node Manager"
+  when: "'managed' in group_names"
+  become_user: "{{ machine_user }}"
+  shell: "nohup {{ domain_home }}/bin/startNodeManager.sh &"
+
+- name: "Start WebLogic Admin Server"
+  when: "'admin' in group_names"
+  become_user: "{{ machine_user }}"
+  shell: "nohup {{ domain_home }}/startWebLogic.sh &"
+
+- name: "Wait for Admin Server to start"
+  when: "'admin' in group_names"
+  wait_for:
+    host: "{{ admin_server.address }}"
+    port: "{{ admin_server.port }}"
+    state: started
+    delay: 10
+    timeout: 180
+
+- name: "Start Managed Server"
+  when: "'managed' in group_names"
+  become_user: "{{ machine_user }}"
+  shell: "nohup {{ domain_home }}/bin/startManagedWebLogic.sh {{ managed_server.name }} http://{{ admin_server.address }}:{{ admin_server.port }} &"

@@ -1,26 +1,31 @@
 ---
-oracle_home: "{{ app_home }}/oracle"
-java_home: "{{ app_home }}/java"
-application_home: "/app/user_projects/applications"
-app_home: "/app"
-inventory_home: "{{ app_home }}/oraInsta.loc"
+# Directory Structure
+base_dir: "/app"
+oracle_home: "{{ base_dir }}/oracle"
+java_home: "{{ base_dir }}/java"
+application_home: "{{ base_dir }}/user_projects/applications"
+domain_home: "{{ base_dir }}/user_projects/domains/{{ weblogic_domain }}"
+inventory_home: "{{ base_dir }}/oraInsta.loc"
 
+# Security Configuration
 machine_user: "weblogic"
-
 weblogic_user: "weblogic"
 weblogic_pass: "weblogic1"
 
+# WebLogic Configuration
 install_type: "WebLogic Server"
-
-admin_server_address: "192.168.56.10"
-admin_server_name: "AdminServer"
-admin_server_port: 7001
 weblogic_domain: "base_domain"
-domain_home: "{{ app_home }}/user_projects/domains/{{ weblogic_domain }}"
 
-machine_name: "machine1"
-managed_server_name: "machine1"
-managed_server_port: 8001
-managed_machine_address: "192.168.56.11"
+# Server Configuration
+admin_server:
+  name: "AdminServer"
+  address: "192.168.56.10"
+  port: 7001
 
-nodemanager_port: 5556
+managed_server:
+  name: "machine1"
+  address: "192.168.56.11"
+  port: 8001
+
+nodemanager:
+  port: 5556

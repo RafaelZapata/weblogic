@@ -1,3 +1,16 @@
+- name: "Pre-installation checks"
+  block:
+    - name: "Check if WebLogic is already installed"
+      stat:
+        path: "{{ oracle_home }}/wlserver"
+      register: wls_install
+
+    - name: "Check available disk space"
+      shell: "df -h / | awk 'NR==2 {print $4}'"
+      register: available_space
+      changed_when: false
+  tags: ["precheck"]
+
 - name: "Create group"
   group:
     name: "{{ machine_user }}"
@@ -7,29 +20,18 @@
     name: "{{ machine_user }}"
     group: "{{ machine_user }}"
 
-- name: "Create Oracle Home"
+- name: "Create required directories"
   file:
-    path: "{{ oracle_home }}"
+    path: "{{ item }}"
     state: directory
     owner: "{{ machine_user }}"
     group: "{{ machine_user }}"
     mode: "0755"
-
-- name: "Create Domain Home"
-  file:
-    path: "{{ domain_home }}"
-    state: directory
-    owner: "{{ machine_user }}"
-    group: "{{ machine_user }}"
-    mode: "0755"
-
-- name: "Create Application Home"
-  file:
-    path: "{{ application_home }}"
-    state: directory
-    owner: "{{ machine_user }}"
-    group: "{{ machine_user }}"
-    mode: "0755"
+  with_items:
+    - "{{ oracle_home }}"
+    - "{{ domain_home }}"
+    - "{{ application_home }}"
+  tags: ["setup"]
 
 - name: "Changing /app ownership and permissions"
   file:
@@ -60,7 +62,7 @@
   become_user: "{{ machine_user }}"
   unarchive:
     src: "{{ item }}"
-    dest: "{{ app_home }}"
+    dest: "{{ base_dir }}"
   with_items:
     - "fmw_14.1.1.0.0_wls_lite_Disk1_1of1.zip"
 
@@ -68,24 +70,38 @@
   become_user: "{{ machine_user }}"
   template:
     src: "oraInsta.loc.j2"
-    dest: "{{ app_home }}/oraInsta.loc"
+    dest: "{{ base_dir }}/oraInsta.loc"
     mode: 0755
 
 - name: "Response file to silent installation"
   become_user: "{{ machine_user }}"
   template:
     src: "wls.rsp.j2"
-    dest: "{{ app_home }}/wls.rsp"
+    dest: "{{ base_dir }}/wls.rsp"
     mode: 0755
 
 - name: "Install weblogic silent mode"
   become_user: "{{ machine_user }}"
-  command: "{{ java_home }}/bin/java -Xmx1024m -jar {{ app_home }}/fmw_14.1.1.0.0_wls_lite_generic.jar -silent -responseFile {{ app_home }}/wls.rsp -invPtrLoc {{ inventory_home }}/"
+  command: "{{ java_home }}/bin/java -Xmx1024m -jar {{ base_dir }}/fmw_14.1.1.0.0_wls_lite_generic.jar -silent -responseFile {{ base_dir }}/wls.rsp -invPtrLoc {{ inventory_home }}/"
 
-- name: "Remove weblogic installer"
+- name: "Remove installation files"
   become_user: "{{ machine_user }}"
-  command: "rm -rf {{ app_home }}/fmw_14.1.1.0.0_wls_lite_generic.jar"
+  file:
+    path: "{{ base_dir }}/{{ item }}"
+    state: absent
+  with_items:
+    - "fmw_14.1.1.0.0_wls_lite_generic.jar"
+    - "wls.rsp"
 
-- name: "Remove response file"
-  become_user: "{{ machine_user }}/"
-  command: "rm -f {{ app_home }}/wls.rsp"
+- name: "Verify installation"
+  block:
+    - name: "Check WebLogic version"
+      command: "{{ oracle_home }}/oracle_common/common/bin/wlst.sh -c 'print preferencesMBean.getWeblogicVersion()'"
+      register: wls_version
+      changed_when: false
+
+    - name: "Verify Java version"
+      command: "{{ java_home }}/bin/java -version"
+      register: java_version
+      changed_when: false
+  tags: ["verify"]

@@ -2,24 +2,12 @@
 - name: "Copy domain template"
   template:
     src: "create_domain.py.j2"
-    dest: "{{ app_home }}/create_domain.py"
+    dest: "{{ base_dir }}/create_domain.py"
     mode: 0755
 
 - name: "Create domain"
   become_user: "{{ machine_user }}"
-  command: "{{ oracle_home }}/oracle_common/common/bin/wlst.sh {{ app_home }}/create_domain.py"
-
-- name: "Start weblogic admin"
-  become_user: "{{ machine_user }}"
-  shell: "nohup {{ domain_home }}/startWebLogic.sh &"
-
-- name: "Check admin status"
-  wait_for:
-    host: "{{ admin_server_address }}"
-    port: "{{ admin_server_port }}"
-    state: started
-    delay: 10
-    timeout: 180
+  command: "{{ oracle_home }}/oracle_common/common/bin/wlst.sh {{ base_dir }}/create_domain.py"
 
 - name: "Pack domain"
   become_user: "{{ machine_user }}"
@@ -44,5 +32,5 @@
 
 - name: "Remove domain template"
   file:
-    path: "{{ app_home }}/create_domain.py"
+    path: "{{ base_dir }}/create_domain.py"
     state: absent

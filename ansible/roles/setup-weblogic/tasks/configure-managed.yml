@@ -17,13 +17,9 @@
     line: "SecureListener=false"
     create: yes
 
-- name: "Start Node Manager"
-  become_user: "{{ machine_user }}"
-  shell: "nohup {{ domain_home }}/bin/startNodeManager.sh &"
-
 - name: "Ensure security directory exists for Managed Server"
   file:
-    path: "{{ domain_home }}/servers/{{ managed_server_name }}/security"
+    path: "{{ domain_home }}/servers/{{ managed_server.name }}/security"
     state: directory
     owner: "{{ machine_user }}"
     group: "{{ machine_user }}"
@@ -31,14 +27,10 @@
 
 - name: "Create boot.properties for managed server"
   copy:
-    dest: "{{ domain_home }}/servers/{{ managed_server_name }}/security/boot.properties"
+    dest: "{{ domain_home }}/servers/{{ managed_server.name }}/security/boot.properties"
     content: |
       username={{ weblogic_user }}
       password={{ weblogic_pass }}
     owner: "{{ machine_user }}"
     group: "{{ machine_user }}"
     mode: 0600
-
-- name: "Start managed Server"
-  become_user: "{{ machine_user }}"
-  shell: "nohup {{ domain_home }}/bin/startManagedWebLogic.sh {{ managed_server_name }} http://{{ admin_server_address }}:{{ admin_server_port }} &"

@@ -1,0 +1,18 @@
+---
+- name: "Stop Managed Server"
+  when: "'managed' in group_names"
+  become_user: "{{ machine_user }}"
+  shell: "{{ domain_home }}/bin/stopManagedWebLogic.sh {{ managed_server.name }} http://{{ admin_server.address }}:{{ admin_server.port }}"
+  ignore_errors: true
+
+- name: "Stop Admin Server"
+  when: "'admin' in group_names"
+  become_user: "{{ machine_user }}"
+  shell: "{{ domain_home }}/bin/stopWebLogic.sh"
+  ignore_errors: true
+
+- name: "Stop Node Manager"
+  when: "'managed' in group_names"
+  become_user: "{{ machine_user }}"
+  shell: "pkill -f NodeManager"
+  ignore_errors: true

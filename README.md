@@ -2,149 +2,149 @@
 
 ## Project Overview
 
-This repository contains a complete automation solution for deploying and managing a WebLogic Server environment using Ansible. The project includes configurations for an Admin Server and a Managed Server, orchestrated through a Docker-based Ansible Controller.
+This repository contains an automation solution for deploying and managing WebLogic Server environments using Ansible. The project includes configurations for Admin Server and Managed Server deployment, along with certificate management capabilities.
 
 ### Key Features
 
-- Automated WebLogic domain creation for Admin and Managed Servers.
-- Configuration of Node Manager for server lifecycle management.
-- Secure communication using SSH between the Admin Server and Managed Server.
-- Docker container as the Ansible Controller, simplifying deployment and ensuring a controlled environment.
+- Automated WebLogic installation and domain creation
+- Configuration for both Admin and Managed Servers
+- Certificate management and SSL setup
+- Server lifecycle management (start/stop operations)
+- Modular role-based architecture
 
 ## Repository Structure
 
 ```
-├── ansible
-│   ├── hosts                     # Ansible inventory file
-│   ├── main.yml                  # Main playbook for executing tasks
-│   └── roles
-│       └── setup-weblogic        # Role for WebLogic configuration
-│           ├── defaults
-│           │   └── main.yml      # Default variables
-│           ├── files             # Files used in the setup process
-│           ├── handlers
-│           │   └── main.yml      # Handlers for restarting services
-│           ├── meta
-│           │   └── main.yml      # Metadata for the role
-│           ├── tasks
-│           │   ├── create-domain.yml  # Task for creating the domain
-│           │   ├── create-managed.yml # Task for creating the managed server
-│           │   ├── install-weblogic.yml # WebLogic installation tasks
-│           │   └── main.yml          # Task entrypoint
-│           ├── templates          # Templates for WebLogic configuration
-│           │   ├── create_domain.py.j2
-│           │   ├── create_node_managed.py.j2
-│           │   ├── oraInsta.loc.j2
-│           │   └── wls.rsp.j2
-│           ├── tests
-│           │   ├── inventory       # Test inventory for validation
-│           │   └── test.yml        # Playbook for testing
-│           └── vars
-│               └── main.yml        # Variables specific to the role
-└── infrastructure
-    ├── Dockerfile                 # Dockerfile for Ansible controller
-    ├── id_rsa                     # Private SSH key (example placeholder)
-    ├── id_rsa.pub                 # Public SSH key (example placeholder)
-    └── Vagrantfile                # Vagrant configuration for virtual machines
+ansible/
+├── hosts                    # Inventory file defining server groups
+├── main.yml                # Main playbook
+└── roles/
+    ├── setup-weblogic/     # WebLogic installation and configuration
+    │   ├── tasks/
+    │   │   ├── main.yml
+    │   │   ├── install-weblogic.yml
+    │   │   ├── configure-domain.yml
+    │   │   ├── configure-managed.yml
+    │   │   ├── start-weblogic.yml
+    │   │   └── stop-weblogic.yml
+    │   ├── templates/
+    │   │   ├── create_domain.py.j2
+    │   │   ├── create_node_managed.py.j2
+    │   │   ├── oraInsta.loc.j2
+    │   │   └── wls.rsp.j2
+    │   └── vars/
+    │       └── main.yml
+    └── manage-cert/        # Certificate management role
+        ├── tasks/
+        │   ├── main.yml
+        │   ├── create-certs.yml
+        │   ├── install-cert.yml
+        │   ├── restart-admin.yml
+        │   └── restart-managed.yml
+        └── vars/
+            └── main.yml
 ```
 
-## Setup Instructions
+## Prerequisites
 
-### Prerequisites
+- Ansible 2.9+
+- Python 3.x
+- WebLogic Server installation files
+- JDK 8 installation files
 
-- Docker installed on the host machine.
-- VirtualBox and Vagrant for creating the Admin Server and Managed Server VMs.
+## Configuration
 
-### Generating SSH Keys
+### Server Groups
 
-Since private keys are not included in the repository, you need to generate SSH keys before starting:
+The inventory (`hosts`) file defines the following server groups:
+
+```ini
+[admin]      # WebLogic Admin Server
+[managed]    # WebLogic Managed Server
+[weblogic]   # Group containing both admin and managed
+```
+
+### Variables
+
+Key variables can be configured in:
+
+- `roles/setup-weblogic/vars/main.yml` for WebLogic configuration
+- `roles/manage-cert/vars/main.yml` for certificate management
+
+## Usage
+
+### Basic Installation
 
 ```bash
-ssh-keygen -t rsa -b 4096 -C "your_email@example.com" -f ansible/id_rsa -N ""
+ansible-playbook -i hosts main.yml
 ```
 
-This command generates:
+### Managing WebLogic State
 
-- A private key (`id_rsa`) used by the Ansible Controller.
-- A public key (`id_rsa.pub`) to be added to the `authorized_keys` of the Admin and Managed Servers.
-
-### Building the Docker Image
-
-The Docker container serves as the Ansible Controller. To build it, run:
+To start WebLogic services:
 
 ```bash
-docker build -t ansible-controller .
+ansible-playbook -i hosts main.yml -e "weblogic_state=started"
 ```
 
-### Running the Docker Container
-
-Run the Ansible Controller container:
+To stop WebLogic services:
 
 ```bash
-docker run -it --name ansible-controller -v ${PWD}/../ansible:/ansible ansible-controller
+ansible-playbook -i hosts main.yml -e "weblogic_state=stopped"
 ```
 
-The `-v` flag ensures that the Ansible files are correctly mounted into the container.
+### Certificate Management
 
-### Setting Up the Virtual Machines
-
-Use Vagrant to create the Admin Server and Managed Server VMs:
+To manage SSL certificates:
 
 ```bash
-vagrant up
+ansible-playbook -i hosts main.yml --tags "certificates"
 ```
 
-Ensure the Admin Server VM has a NAT network configuration for connectivity with the local host.
+## Server Configuration
 
-### Deploying WebLogic with Ansible
+### Admin Server
 
-1. SSH into the Docker container:
-   ```bash
-   docker exec -it ansible-controller bash
-   ```
-2. Run the Ansible playbook:
-   ```bash
-   ansible-playbook -i ansible/hosts ansible/main.yml
-   ```
+- Default port: 7001
+- Console URL: http://admin_server:7001/console
 
-## Explanation of the Code
+### Managed Server
 
-### Dockerfile
+- Default port: 8001
+- Node Manager port: 5556
 
-The Dockerfile creates a containerized environment for the Ansible Controller. Key features include:
+## Security Notes
 
-- Installation of Python and Ansible.
-- Addition of the SSH key for secure communication with the VMs.
-- Configuration of `/etc/hosts` for resolving VM hostnames.
-
-### Ansible Playbooks and Roles
-
-The Ansible playbooks and roles handle:
-
-- Creating and configuring the WebLogic domain for the Admin and Managed Servers.
-- Setting up Node Manager and secure communication.
-- Deploying the `boot.properties` for seamless server startup.
-
-### Vagrantfile
-
-The Vagrantfile defines two VMs:
-
-- **Admin Server:** Handles WebLogic Administration Console and domain creation.
-- **Managed Server:** Joins the domain created by the Admin Server.
-
-## Notes
-
-- Ensure that the private key (`id_rsa`) remains secure and is not uploaded to any public repository.
-- The NAT network ensures connectivity between the Admin Server and your local host machine, enabling access to the WebLogic console.
+- Default credentials are for development only
+- Change all default passwords before production use
+- Ensure proper file permissions for keystores and certificates
 
 ## Troubleshooting
 
-- **Node Manager Issues:** Ensure that the `SecureListener` property is set to `false` in `nodemanager.properties` before starting Node Manager.
-- **Managed Server Connection:** Verify that the Admin Server’s IP is correctly set in the Managed Server configuration.
+Common issues and solutions:
+
+1. **Connection Issues**
+
+   - Verify SSH connectivity
+   - Check firewall settings
+   - Ensure correct host entries
+
+2. **Installation Failures**
+
+   - Verify disk space requirements
+   - Check file permissions
+   - Review installation logs
+
+3. **Start/Stop Problems**
+   - Check server status
+   - Verify Node Manager configuration
+   - Review server logs
 
 ## Contributing
 
-Feel free to fork this repository and submit pull requests to enhance functionality or fix issues.
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
 
 ## License
 

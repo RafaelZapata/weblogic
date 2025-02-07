@@ -2,10 +2,20 @@
 - name: "Install WebLogic and Java on all hosts"
   include: install-weblogic.yml
 
-- name: "Create WebLogic Domain on Admin Server"
+- name: "Configure WebLogic Domain on Admin Server"
   when: "'admin' in group_names"
-  include: create-domain.yml
+  include: configure-domain.yml
 
-- name: "Create Weblogic Domain on Managed Server"
+- name: "Configure Weblogic Domain on Managed Server"
   when: "'managed' in group_names"
-  include: create-managed.yml
+  include: configure-managed.yml
+
+- name: "Start WebLogic Services"
+  include: start-weblogic.yml
+  tags: ["start"]
+  when: weblogic_state | default('started') == 'started'
+
+- name: "Stop WebLogic Services"
+  include: stop-weblogic.yml
+  tags: ["stop"]
+  when: weblogic_state | default('started') == 'stopped'

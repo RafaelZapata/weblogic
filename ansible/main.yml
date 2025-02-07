@@ -1,11 +1,12 @@
 ---
-- hosts: weblogic
+- name: Setup WebLogic Environment
+  hosts: weblogic
   become: yes
   roles:
     - setup-weblogic
-    - manage-cert
 
-- hosts: tomcat
+- name: Configure Certificates
+  hosts: weblogic
   become: yes
   roles:
-    - setup-tomcat
+    - { role: manage-cert, tags: ["certificates"] }
