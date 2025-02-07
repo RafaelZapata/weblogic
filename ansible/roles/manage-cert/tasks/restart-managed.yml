@@ -1,11 +1,15 @@
+# Stop the Managed Server
 - name: "Stop managed"
+  # Find and kill the managed server process
   shell: "ps -ef | grep 'Dweblogic.Name=machine1' | grep -v grep | awk '{print $2}' | xargs -r kill -9"
   register: stop_managed
   changed_when: stop_managed.stdout != ""
   failed_when: false # Don't fail if process is not running
   ignore_errors: true
 
+# Wait for Process Termination
 - name: "Wait for process to stop"
+  # Verify that the process has been terminated
   wait_for:
     path: "/proc/{{ item }}/status"
     state: absent
@@ -13,13 +17,17 @@
   ignore_errors: true
   when: stop_managed.stdout_lines is defined
 
+# Start the Managed Server
 - name: "Start managed"
+  # Start the managed server using startManagedWebLogic script
   become_user: "{{ machine_user }}"
   shell: "nohup {{ domain_home }}/bin/startManagedWebLogic.sh {{ managed_server_name }} http://{{ admin_server_address }}:{{ admin_server_port }} >> {{ domain_home }}/logs/managed_start.log 2>&1 &"
   async: 45
   poll: 0
 
+# Verify Server Status
 - name: "Check managed status"
+  # Ensure the managed server is up and running
   wait_for:
     host: "{{ managed_machine_address }}"
     port: "{{ managed_server_port }}"

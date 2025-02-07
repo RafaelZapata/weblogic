@@ -1,31 +1,36 @@
 ---
-# Directory Structure
+# Directory Structure Configuration
+# Defines the base paths for Oracle WebLogic installation and domain setup
 base_dir: "/app"
-oracle_home: "{{ base_dir }}/oracle"
-java_home: "{{ base_dir }}/java"
-application_home: "{{ base_dir }}/user_projects/applications"
-domain_home: "{{ base_dir }}/user_projects/domains/{{ weblogic_domain }}"
-inventory_home: "{{ base_dir }}/oraInsta.loc"
+oracle_home: "{{ base_dir }}/oracle" # Oracle WebLogic installation directory
+java_home: "{{ base_dir }}/java" # Java installation directory
+application_home: "{{ base_dir }}/user_projects/applications" # Applications deployment directory
+domain_home: "{{ base_dir }}/user_projects/domains/{{ weblogic_domain }}" # WebLogic domain home
+inventory_home: "{{ base_dir }}/oraInsta.loc" # Oracle inventory location
 
 # Security Configuration
-machine_user: "weblogic"
-weblogic_user: "weblogic"
-weblogic_pass: "weblogic1"
+# Defines users and credentials for WebLogic setup
+machine_user: "weblogic" # OS-level user for WebLogic processes
+weblogic_user: "weblogic" # WebLogic admin console username
+weblogic_pass: "weblogic1" # WebLogic admin console password
 
-# WebLogic Configuration
-install_type: "WebLogic Server"
-weblogic_domain: "base_domain"
+# WebLogic Installation Configuration
+install_type: "WebLogic Server" # Type of installation
+weblogic_domain: "base_domain" # Name of the WebLogic domain
 
 # Server Configuration
+# Admin Server settings
 admin_server:
-  name: "AdminServer"
-  address: "192.168.56.10"
-  port: 7001
+  name: "AdminServer" # Name of the Admin Server
+  address: "192.168.56.10" # Listen address for Admin Server
+  port: 7001 # Listen port for Admin Server
 
+# Managed Server settings
 managed_server:
-  name: "machine1"
-  address: "192.168.56.11"
-  port: 8001
+  name: "machine1" # Name of the Managed Server
+  address: "192.168.56.11" # Listen address for Managed Server
+  port: 8001 # Listen port for Managed Server
 
+# Node Manager Configuration
 nodemanager:
-  port: 5556
+  port: 5556 # Listen port for Node Manager

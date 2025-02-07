@@ -1,44 +1,51 @@
 ---
-# User settings
+# User Configuration
+# Defines the OS user that will own and run Tomcat
 machine_user: "tomcat"
 
-# Directory structure
-app_home: "/app"
-java_home: "{{ app_home }}/java"
-tomcat_home: "{{ app_home }}/tomcat"
+# Directory Structure Configuration
+# Base paths for application deployment
+app_home: "/app" # Root directory for all applications
+java_home: "{{ app_home }}/java" # Java installation directory
+tomcat_home: "{{ app_home }}/tomcat" # Tomcat installation directory
 
-# Tomcat version settings
+# Tomcat Version Configuration
+# Specifies the Tomcat versions for installation and upgrade
 tomcat_major_version: "9"
-tomcat_version: "9.0.39"
+tomcat_version: "9.0.39" # Initial Tomcat version
 tomcat_download_file: "apache-tomcat-{{ tomcat_version }}"
-tomcat_target_version: "9.0.98"
+tomcat_target_version: "9.0.98" # Target version for upgrades
 tomcat_target_download_file: "apache-tomcat-{{ tomcat_target_version }}"
 tomcat_dist: "9"
 
-# Network settings
-tomcat_address: "192.168.56.12"
-tomcat_port: 8080
-tomcat_shutdown_port: 8005
-tomcat_ajp_port: 8009
+# Network Configuration
+# Network settings for Tomcat instance
+tomcat_address: "192.168.56.12" # Tomcat listen address
+tomcat_port: 8080 # HTTP connector port
+tomcat_shutdown_port: 8005 # Shutdown port
+tomcat_ajp_port: 8009 # AJP connector port
 
-# Memory settings
-tomcat_xms: "512M"
-tomcat_xmx: "1024M"
+# JVM Memory Configuration
+# Memory allocation settings for Tomcat
+tomcat_xms: "512M" # Initial heap size
+tomcat_xmx: "1024M" # Maximum heap size
 
-# Security settings
-tomcat_allow_manager_access_from: ".*" # Restrict as needed
+# Security Configuration
+tomcat_allow_manager_access_from: ".*" # Access pattern for manager app
 
-# Backup settings
-backup_retention_days: 7
-max_backups: 5
+# Backup Configuration
+# Settings for backup management
+backup_retention_days: 7 # Days to keep backups
+max_backups: 5 # Maximum number of backups to retain
 
-# Health check settings
-health_check_interval: 60
-max_health_retries: 3
-health_check_timeout: 30
+# Health Monitoring Configuration
+health_check_interval: 60 # Seconds between health checks
+max_health_retries: 3 # Maximum retry attempts
+health_check_timeout: 30 # Timeout for health checks
 
-# Additional JVM tuning
+# Advanced JVM Configuration
+# Additional JVM and thread pool settings
 tomcat_initial_heap: "{{ tomcat_xms }}"
 tomcat_max_heap: "{{ tomcat_xmx }}"
-tomcat_max_threads: 200
-tomcat_min_spare_threads: 25
+tomcat_max_threads: 200 # Maximum number of request threads
+tomcat_min_spare_threads: 25 # Minimum number of spare threads

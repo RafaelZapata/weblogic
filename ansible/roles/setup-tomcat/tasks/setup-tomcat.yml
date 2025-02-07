@@ -1,11 +1,14 @@
 ---
+# Pre-installation System Checks
 - name: "Pre-flight checks"
   block:
     - name: "Check available disk space in GB"
-      shell: "df -h / | awk 'NR==2 {print $4}' | sed 's/G//'" # Remove the G suffix Changed to get raw KB value
+      # Ensures sufficient disk space before installation
+      shell: "df -h / | awk 'NR==2 {print $4}' | sed 's/G//'"
       register: available_space
-      failed_when: (available_space.stdout|float) < 2 # Compare with 2GB
+      failed_when: (available_space.stdout|float) < 2
 
+# User and Group Setup
 - name: "Create tomcat group"
   group:
     name: "{{ machine_user }}"
@@ -15,6 +18,7 @@
     name: "{{ machine_user }}"
     group: "{{ machine_user }}"
 
+# Directory Setup and Permissions
 - name: "Create app_home"
   file:
     path: "{{ app_home }}"
@@ -22,6 +26,7 @@
     group: "{{ machine_user }}"
     state: directory
 
+# Java Installation
 - name: "Install java"
   become_user: "{{ machine_user }}"
   unarchive:
@@ -30,6 +35,7 @@
   with_items:
     - "jdk-8u421-linux-x64.tar.gz"
 
+# Java Home Configuration
 - name: "Link java_home"
   become_user: "{{ machine_user }}"
   file:
@@ -40,6 +46,7 @@
     state: link
     force: yes
 
+# Tomcat Download and Installation
 - name: "Download tomcat"
   become_user: "{{ machine_user }}"
   get_url:
@@ -53,6 +60,7 @@
   retries: 3
   delay: 5
 
+# Tomcat Extraction and Setup
 - name: "Unpack tomcat file"
   become_user: "{{ machine_user }}"
   unarchive:
@@ -60,6 +68,7 @@
     dest: "{{ app_home }}"
     remote_src: yes
 
+# Tomcat Symbolic Link Creation
 - name: "Link tomcat with tomcat download file"
   become_user: "{{ machine_user }}"
   file:
@@ -68,12 +77,14 @@
     state: link
     mode: 0755
 
+# Environment Configuration
 - name: "Copy setenv to tomcat_home/bin"
   template:
     src: "setenv.sh.j2"
     dest: "{{ tomcat_home }}/bin/setenv.sh"
     mode: 0755
 
+# Permission Setup
 - name: Ensure permissions for Tomcat directories
   file:
     path: "{{ tomcat_home }}"
@@ -82,12 +93,14 @@
     group: "{{ machine_user }}"
     recurse: yes
 
+# Tomcat Service Start
 - name: Start Tomcat with explicit environment
   shell: "setsid {{ tomcat_home }}/bin/startup.sh & disown"
   become_user: "{{ machine_user }}"
   args:
     chdir: "{{ tomcat_home }}"
 
+# Backup Creation
 - name: Create backup of initial installation
   archive:
     path: "{{ tomcat_home }}"
@@ -96,6 +109,7 @@
     group: "{{ machine_user }}"
   when: not ansible_check_mode
 
+# Service Health Check
 - name: "Check tomcat status"
   wait_for:
     host: "{{ tomcat_address }}"
