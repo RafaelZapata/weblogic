@@ -84,5 +84,3 @@
     state: started
     delay: 10
     timeout: 120
-
-- name: Backup old tomcat
