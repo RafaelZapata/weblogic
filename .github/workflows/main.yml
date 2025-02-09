@@ -1,0 +1,18 @@
+name: Setup docker
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup_docker:
+    name: Create docker container
+    runs-on: ubuntu-latest
+
+    steps: 
+    - uses: actions/checkout@v4
+
+    - name: Build docker image
+      run: docker build ./infrastrcture/ --file Dockerfile --tag my-image-name:$(date +%s)
+    
+      
+  
