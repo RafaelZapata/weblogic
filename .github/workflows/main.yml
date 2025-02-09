@@ -15,4 +15,4 @@ jobs:
         uses: docker/setup-buildx-action@v3.9.0
 
       - name: Build docker image
-        run: docker build ./infrastructure/Dockerfile --tag ansible-control:latest
+        run: docker build . -f ./infrastructure/Dockerfile --tag ansible-control:latest
