@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Build docker image
-      run: docker build infrastructure/ --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
     
       
   
